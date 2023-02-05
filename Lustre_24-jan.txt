@@ -1,0 +1,262 @@
+===============================================================================Lustre================================================================================================
+
+hostnamectl set-hostname client
+   30  ssh-keygen 
+   31  uname --version
+   32  ssh-copy-id root@oss-ost
+   33  ssh oss-ost 
+   34  init 6
+   35  vim /etc/hosts
+   36  ssh-keygen 
+   37  ssh-copy-id root@mgs-mds 
+   38  ssh mgs-mds 
+   39  cat >/tmp/lustre-repo.conf <<\__EOF
+   40  [lustre-server]
+   41  name=lustre-server
+   42  baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7/server
+   43  gpgcheck=0
+   44  [lustre-client]
+   45  name=lustre-client
+   46  baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7/client
+   47  gpgcheck=0
+   48  [e2fsprogs-wc]
+   49  name=e2fsprogs-wc
+   50  baseurl=https://downloads.whamcloud.com/public/e2fsprogs/latest/el7
+   51  gpgcheck=0
+   52  __EOF
+   53  ls
+   54  cd /tmp/
+   55  ls
+   56  cp /lustre-repo.conf /etc/yum.repos.d/
+   57  cp lustre-repo.conf /etc/yum.repos.d/
+   58  cd
+   59  vim /etc/yum.repos.d/
+   60  cd /etc/yum.repos.d/
+   61  ls
+   62  vim lustre-repo.conf 
+   63  scp lustre-repo.conf  root@mgs-mds /etc/yum.repos.d/
+   64  cd
+   65  cd /etc/yum.repos.d/
+   66  mv lustre-repo.conf lustre.repo
+   67  ssh mgs-mds 
+   68  ssh oss-ost 
+   69  ssh mgs-mds
+   70  ssh oss-ost 
+   71  ssh-copy-id root@mgs-mds
+   72  ssh mgs-mds
+   73  yum clean all
+   74  ssh mgs-mds 
+   75  vim /etc/yum.repos.d/lustre.repo 
+   76  scp /etc/yum.repos.d/lustre.repo mgs-mds:/etc/yum.repos.d/
+   77  scp /etc/yum.repos.d/lustre.repo oss-ost:/etc/yum.repos.d/
+   78  yum install kernel kernel-devel kernel-headers kernel-abi-whitelists kernel-tools kernel-tools-libs kernel-tools-libs-devel
+   79  rpm -qa | grep kernel
+   80  reboot
+   81  yum --nogpgcheck --enablerepo=lustre-client-2.10.0 install kmod-lustre-client yum --nogpgcheck --enablerepo=lustre-client-2.12.0 install kmod-lustre-client 
+   82  yum --nogpgcheck --enablerepo=lustre.repo install kmod-lustre-client lustre-client
+   83  ls /etc/yum.repos.d/
+   84  yum --nogpgcheck --enablerepo=lustre-client install kmod-lustre-client lustre-client
+   85  modprobe -v lustre
+   86  lsmod | grep lustre
+   87  vim /etc/modprobe.d/lustre.conf
+   88  ip a
+   89  scp /etc/modprobe.d/lustre.conf oss-ost:/etc/modprobe.d/
+   90  scp /etc/modprobe.d/lustre.conf mgs-mds:/etc/modprobe.d/
+   91  lctl list_nids 
+   92  lctl ping 192.168.139.172@tcp
+   93  mkdir /mnt/lustre
+   94  mount -t lustre 192.168.139.171@tcp0:/lustre /mnt/lustre
+   95  mount -t lustre 192.168.139.172@tcp0:/lustre /mnt/lustre
+   96  df -Th
+   97  ls
+   98  touch file
+   99  cd /mnt/lustre
+  100  touch file
+  101  ls
+  102  mkdir file2
+  103  ls
+  104  history
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Only OSS-OST
+
+[root@oss-ost ~]#
+ hostnamectl set-hostname client2
+    5  ip a
+    6  systemctl status firewalld.service
+    7  systemctl stop  firewalld.service
+    8  systemctl disable  firewalld.service
+    9  vim /etc/selinux/config 
+   10  reboot
+   11  sestatus 
+   12  ip a
+   13  systemctl status  firewalld.service
+   14  yum install httpd -y
+   15  hostnamectl set-hostname OSS-OST
+   16  vim
+   17  vim /etc/hosts
+   18  cat >/tmp/lustre-repo.conf <<\__EOF
+   19  [lustre-server]
+   20  name=lustre-server
+   21  baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7/server
+   22  gpgcheck=0
+   23  [lustre-client]
+   24  name=lustre-client
+   25  baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7/client
+   26  gpgcheck=0
+   27  [e2fsprogs-wc]
+   28  name=e2fsprogs-wc
+   29  baseurl=https://downloads.whamcloud.com/public/e2fsprogs/latest/el7
+   30  gpgcheck=0
+   31  __EOF
+   32  ls
+   33  cd /tmp/
+   34  cp lustre-repo.conf /etc/yum.repos.d/
+   35  cd
+   36  cd /etc/yum.repos.d/
+   37  ls
+   38  vim lustre-repo.conf 
+   39  cd
+   40  yum install epel release
+   41  yum install epel-release
+   42  mv lustre-repo.conf lustre.repo
+   43  cd /etc/yum.repos.d/
+   44  mv lustre-repo.conf lustre.repo
+   45  yum --nogpgcheck --disablerepo=* --enablerepo=e2fsprogs-wc install e2fsprogs
+   46  cd
+   47  yum --nogpgcheck --disablerepo=base,extras,updates --enablerepo=lustre-server install kernel kernel-devel kernel-headers kernel-tools kernel-tools-libs kernel-tools-libs-devel
+   48  init 6
+   49  yum clean all
+   50  rpm -qa | grep kernel
+   51  yum --nogpgcheck --disablerepo=base,extras,updates --enablerepo=lustre-server update kernel kernel-devel kernel-headers kernel-tools kernel-tools-libs kernel-tools-libs-devel
+   52  rpm -qa | grep kernel
+   53  rpm -e kernel-devel-3.10.0-957.1.3.el7_lustre.x86_64
+   54  rpm -qa | grep kernel
+   55  rpm -e kernel-3.10.0-957.1.3.el7_lustre.x86_64
+   56  yum --nogpgcheck --disablerepo=base,extras,updates --enablerepo=lustre-server install kernel kernel-devel kernel-headers kernel-tools kernel-tools-libs kernel-tools-libs-devel
+   57  rpm -qa | grep kernel
+   58  uname -r
+   59  reboot
+   60  yum --nogpgcheck --enablerepo=lustre-server install kmod-lustre kmod-lustre-osd-ldiskfs lustre-osd-ldiskfs-mount lustre lustre-resource-agents
+   61  modprobe -v lustre
+   62  lsmod | grep lustre
+   63  mkfs.lustre --ost --fsname=lustre --mgsnode=192.168.139.172@tcp0 --index=0 /dev/sdb
+   64  mkdir /ostoss_mount && mount -t lustre /dev/sdb /ostoss_mount
+   65  lsblk
+   66  df -Th
+   67  ip a
+   68  vim /etc/modprobe.d/lustre.conf
+   69  lctl list_nids
+   70  ls
+   71  cd /mnt/
+   72  ls
+   73  ll /ostoss_mount/
+   74  df -Th
+   75  ll /ostoss_mount/
+   76  ls
+   77  history hgfs/
+
+
+======================================================================================================================================================================================================================================
+
+
+[root@mgs-mds ~]# history 
+     17  hostnamectl set-hostname MGS-MDS
+    7  systemctl status firewalld.service 
+    8  systemctl stop firewalld.service 
+    9  systemctl disable firewalld.service 
+   10  systemctl status firewalld.service 
+   11  vim /etc/selinux/config 
+   12  reboot
+  
+   18  vim /etc/hosts
+   19  reboot
+   20  cat >/tmp/lustre-repo.conf <<\__EOF
+   21  [lustre-server]
+   22  name=lustre-server
+   23  baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7/server
+   24  gpgcheck=0
+   25  [lustre-client]
+   26  name=lustre-client
+   27  baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7/client
+   28  gpgcheck=0
+   29  [e2fsprogs-wc]
+   30  name=e2fsprogs-wc
+   31  baseurl=https://downloads.whamcloud.com/public/e2fsprogs/latest/el7
+   32  gpgcheck=0
+   33  __EOF
+   34  ls
+   35  /tmp/
+   36  cd /tmp/
+   37  ls
+   38  cd
+   39  cd /tmp/
+   40  ls
+   41  cp /lustre-repo.conf /etc/yum.repos.d/
+   42  cp lustre-repo.conf /etc/yum.repos.d/
+   43  cd
+   44  cd /etc/yum.repos.d/
+   45  ls
+   46  vim lustre-repo.conf 
+   47  cd
+   48  yum --nogpgcheck --disablerepo=* --enablerepo=e2fsprogs-wc install e2fsprogs
+   49  yum yum --nogpgcheck --disablerepo=* --enablerepo=e2fsprogs-wc \
+   50  yum epel-release
+   51  yum install epel-release
+   52  yum --nogpgcheck --disablerepo=* --enablerepo=e2fsprogs-wc install e2fsprogs
+   53  yum install epel-release
+   54  yum --nogpgcheck --disablerepo=* --enablerepo=e2fsprogs-wc install e2fsprogs
+   55  yum --nogpgcheck --disablerepo=* --enablerepo=e2fsprogs-wc install e2fsprogs
+   56  cd /etc/yum.repos.d/
+   57  ls
+   58  vim lustre-repo.conf 
+   59  cd
+   60  yum --nogpgcheck --disablerepo=* --enablerepo=e2fsprogs-wc install e2fsprogs
+   61  yum clean all
+   62  yum --nogpgcheck --disablerepo=* --enablerepo=e2fsprogs-wc install e2fsprogs
+   63  cd /etc/yum.repos.d/
+   64  ls
+   65  mv lustre-repo.conf lustre.repo
+   66  yum --nogpgcheck --disablerepo=* --enablerepo=e2fsprogs-wc install e2fsprogs
+   67  cd
+   68  yum --nogpgcheck --disablerepo=base,extras,updates --enablerepo=lustre-server install kernel kernel-devel kernel-headers kernel-tools kernel-tools-libs kernel-tools-libs-devel
+   69  exit
+   70  reboot
+   71  rpm -qa | grep kernal
+   72  rpm -qa | grep kernel
+   73  vim /etc/yum.repos.d/lustre.repo 
+   74  yum --nogpgcheck --disablerepo=base,extras,updates --enablerepo=lustre-server update kernel kernel-devel kernel-headers kernel-tools kernel-tools-libs kernel-tools-libs-devel
+   75  rpm -qa | grep kernel
+   76  rpm -e kernel-3.10.0-957.1.3.el7_lustre.x86_64
+   77  rpm -qa | grep kernel
+   78  yum --nogpgcheck --disablerepo=base,extras,updates --enablerepo=lustre-server install kernel kernel-devel kernel-headers kernel-tools kernel-tools-libs kernel-tools-libs-devel
+   79  uname -r
+   80  reboot
+   81  uname -r
+   82  reboot
+   83  yum --nogpgcheck --enablerepo=lustre-server install kmod-lustre kmod-lustre-osd-ldiskfs lustre-osd-ldiskfs-mount lustre lustre-resource-agents
+   84  modprobe -v lustre
+   85  lsmod | grep lustre
+   86  lsblk
+   87  mkfs.lustre --fsname=lustre --mgs --mdt --index=0 /dev/sdb
+   88  mkdir /mnt/mdt && mount -t lustre /dev/sdb /mnt/mdt
+   89  df -Th
+   90  lsblk
+   91  ip a
+   92  lsblk
+   93  ip a
+   94  lctl list_nids
+   95  ip a
+   96  cd /mnt/
+   97  ls
+   98  cd luster
+   99  cd
+  100  history
+  101  df -Th
+  102  cd /mnt/mdt
+  103  ll /mnt/
+  104  cd
+  105  history 
+[root@mgs-mds ~]# 
